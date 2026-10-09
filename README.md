@@ -30,7 +30,7 @@ The default static output can be distributed as a paid digital product using a s
 
 ## Verification
 
-GitHub Actions runs the calculation tests, lint, TypeScript checks, and static production build on pushes to main. A dependency lockfile was not generated because the creation environment could not reach the package registry.
+GitHub Actions runs the calculation tests, lint, TypeScript checks, and static production build on pushes to main and pull requests. A dependency lockfile was not generated because the creation environment could not reach the package registry.
 
 ## Pages and navigation
 

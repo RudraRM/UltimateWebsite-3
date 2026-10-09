@@ -96,7 +96,7 @@ The default static output can be distributed as a paid digital product using a s
 
 ## Verification
 
-GitHub Actions runs the calculation tests, lint, TypeScript checks, and static production build on pushes to main. A dependency lockfile was not generated because the creation environment could not reach the package registry.
+GitHub Actions runs the calculation tests, lint, TypeScript checks, and static production build on pushes to main and pull requests. A dependency lockfile was not generated because the creation environment could not reach the package registry.
 
 ## Pages and navigation
 
@@ -458,7 +458,7 @@ function ScenariosResult({ onSave }: { onSave: () => void }) {
     <ProjectSummary />
     <div className="saved"><div className="between wrap"><h2 className="subheading">Saved scenarios ({scenarios.length}/{LIMITS[tier]})</h2><Button onClick={onSave}><Save size={15} />Save current project</Button></div>
       {scenarios.length === 0 && <div className="empty-state"><p className="muted">No saved scenarios yet. Start with your current project, or refine its inputs on the quote page.</p><Link className="text-link" href="/quote">Open quote calculator<ArrowUpRight size={15} /></Link></div>}
-      <AnimatePresence initial={false}>{scenarios.map((scenario, index) => <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key={scenario.id} className="scenario"><Button className="scenario-load" disabled={index >= LIMITS[tier]} onClick={() => { setInputs({ ...scenario.inputs }); setName(scenario.name); setNotice(`Loaded ${scenario.name}. All tool pages now use this project at the ${tier} tier.`); }}><span>{scenario.name}</span><span className="mono small muted">{index >= LIMITS[tier] ? "Tier locked" : money(calculate(scenario.inputs, tier).quote)}</span></Button><Button className="icon-btn" aria-label={`Delete ${scenario.name}`} onClick={() => { setScenarios(current => current.filter(item => item.id !== scenario.id)); setNotice(`Deleted ${scenario.name}.`); }}><Trash2 size={14} /></Button></motion.div>)}</AnimatePresence>
+      <AnimatePresence initial={false}>{scenarios.map((scenario, index) => <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key={scenario.id} className="scenario"><Button className="scenario-load" aria-label={`Load scenario ${scenario.name}`} disabled={index >= LIMITS[tier]} onClick={() => { setInputs({ ...scenario.inputs }); setName(scenario.name); setNotice(`Loaded ${scenario.name}. All tool pages now use this project at the ${tier} tier.`); }}><span>{scenario.name}</span><span className="mono small muted">{index >= LIMITS[tier] ? "Tier locked" : money(calculate(scenario.inputs, tier).quote)}</span></Button><Button className="icon-btn" aria-label={`Delete ${scenario.name}`} onClick={() => { setScenarios(current => current.filter(item => item.id !== scenario.id)); setNotice(`Deleted ${scenario.name}.`); }}><Trash2 size={14} /></Button></motion.div>)}</AnimatePresence>
       {scenarios.length > LIMITS[tier] && <p className="small muted">Scenarios above your current plan limit are retained. Switch plans to access them.</p>}
       {tier !== "Free" && accessible.length > 0 && <div className="comparison"><label htmlFor="compare" className="small muted">Compare current quote with a saved scenario</label><select id="compare" value={compare?.id || ""} onChange={event => setCompareId(event.target.value)}><option value="">Choose a scenario</option>{accessible.map(scenario => <option key={scenario.id} value={scenario.id}>{scenario.name}</option>)}</select>{compared && <p className="small">Quote difference: <b>{money(result.quote - compared.quote)}</b> · Profit difference: <b>{money(result.profit - compared.profit)}</b><span className="muted"> (current minus saved, at {tier} settings)</span></p>}</div>}
       {tier === "Free" && <Upgrade plan="Plus">Keep five scenarios and compare their quote and profit differences.</Upgrade>}
@@ -822,7 +822,8 @@ export default defineConfig({
 MARGINPILOT_SOURCE
 
 cat <<'MARGINPILOT_SOURCE' > postcss.config.mjs
-export default { plugins: { "@tailwindcss/postcss": {} } };
+const config = { plugins: { "@tailwindcss/postcss": {} } };
+export default config;
 MARGINPILOT_SOURCE
 
 cat <<'MARGINPILOT_SOURCE' > tests/browser/navigation.spec.ts
@@ -844,12 +845,12 @@ test("landing stays focused and projects survive navigation and reload", async (
   await page.getByRole("link", { name: "View saved scenarios" }).click();
   await expect(page).toHaveURL(/\/scenarios$/);
   await expect(page.getByRole("heading", { name: "Client Alpha" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Client Alpha" })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Load scenario Client Alpha", exact: true })).toBeEnabled();
   await page.getByRole("link", { name: "Edit quote", exact: true }).click();
   await page.getByLabel("Project name", { exact: true }).fill("Client Beta");
   await page.getByLabel("Estimated effort", { exact: true }).fill("20");
   await page.getByRole("navigation", { name: "Workspace tools" }).getByRole("link", { name: "Scenarios", exact: true }).click();
-  await page.getByRole("button", { name: "Client Alpha" }).click();
+  await page.getByRole("button", { name: "Load scenario Client Alpha", exact: true }).click();
   await page.getByRole("link", { name: "Edit quote", exact: true }).click();
   await expect(page.getByLabel("Project name", { exact: true })).toHaveValue("Client Alpha");
   await expect(page.getByLabel("Estimated effort", { exact: true })).toHaveValue("80");

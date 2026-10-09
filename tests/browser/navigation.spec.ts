@@ -16,12 +16,12 @@ test("landing stays focused and projects survive navigation and reload", async (
   await page.getByRole("link", { name: "View saved scenarios" }).click();
   await expect(page).toHaveURL(/\/scenarios$/);
   await expect(page.getByRole("heading", { name: "Client Alpha" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Client Alpha" })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Load scenario Client Alpha", exact: true })).toBeEnabled();
   await page.getByRole("link", { name: "Edit quote", exact: true }).click();
   await page.getByLabel("Project name", { exact: true }).fill("Client Beta");
   await page.getByLabel("Estimated effort", { exact: true }).fill("20");
   await page.getByRole("navigation", { name: "Workspace tools" }).getByRole("link", { name: "Scenarios", exact: true }).click();
-  await page.getByRole("button", { name: "Client Alpha" }).click();
+  await page.getByRole("button", { name: "Load scenario Client Alpha", exact: true }).click();
   await page.getByRole("link", { name: "Edit quote", exact: true }).click();
   await expect(page.getByLabel("Project name", { exact: true })).toHaveValue("Client Alpha");
   await expect(page.getByLabel("Estimated effort", { exact: true })).toHaveValue("80");
